@@ -2,3 +2,4 @@ python-telegram-bot==20.3
 pymongo
 flask
 gunicorn
+python==3.11.9
