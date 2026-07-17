@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Crypto Wallet Finder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Crypto Wallet Finder</h1>
+        <p class="subtitle">Generates wallets & checks balances automatically</p>
+        
+        <div class="status-bar">
+            <span id="status">⏳ Starting...</span>
+            <span id="counter">Checked: 0</span>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <span class="num" id="totalChecked">0</span>
+                <span class="label">Total Checked</span>
+            </div>
+            <div class="stat">
+                <span class="num" id="foundWallets">0</span>
+                <span class="label">💰 Wallets Found</span>
+            </div>
+            <div class="stat">
+                <span class="num" id="apiStatus">⏳</span>
+                <span class="label">API Status</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">▶️ Start</button>
+            <button id="stopBtn" disabled>⏹️ Stop</button>
+            <button id="saveBtn">💾 Save to GitHub</button>
+        </div>
+        
+        <div class="logs" id="logs">
+            <div class="log-entry">🟢 System initialized</div>
+            <div class="log-entry">📡 API Key loaded</div>
+        </div>
+        
+        <div class="found-list" id="foundList">
+            <h3>💰 Found Wallets</h3>
+            <div id="foundWalletsList"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
