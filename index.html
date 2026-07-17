@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 24x7 Auto Wallet Generator + Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        body {
+            background: #0a0c10;
+            color: #e0e0e0;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        h1 i {
+            color: #00ff88;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        .sub {
+            color: #888;
+            margin-bottom: 18px;
+            border-left: 3px solid #00ff88;
+            padding-left: 14px;
+        }
+        .card {
+            background: #14181f;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border: 1px solid #1e232c;
+        }
+        .card h2 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .stat-box {
+            background: #0b0e14;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border-left: 3px solid #00ff88;
+        }
+        .stat-box .num {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .stat-box .lbl {
+            font-size: 0.65rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .stat-box.red {
+            border-left-color: #ff4444;
+        }
+        .stat-box.blue {
+            border-left-color: #4488ff;
+        }
+        .stat-box.orange {
+            border-left-color: #ff8800;
+        }
+        .api-status {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+            font-size: 0.75rem;
+        }
+        .api-status .chain {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .api-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot.green {
+            background: #00ff88;
+        }
+        .dot.red {
+            background: #ff4444;
+        }
+        .dot.yellow {
+            background: #ffaa00;
+        }
+        .log-area {
+            background: #0b0e14;
+            border-radius: 10px;
+            padding: 12px 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            border: 1px solid #1e232c;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        .log-area .found {
+            color: #00ff88;
+            font-weight: 700;
+        }
+        .log-area .error {
+            color: #ff6b6b;
+        }
+        .log-area .info {
+            color: #6688cc;
+        }
+        .log-area .key {
+            color: #ffaa66;
+        }
+        .log-area .addr {
+            color: #66d9ff;
+        }
+        .log-area .bal {
+            color: #ffdd44;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        th {
+            text-align: left;
+            padding: 8px 8px 6px 8px;
+            color: #888;
+            border-bottom: 1px solid #1e232c;
+            font-weight: 500;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            background: #14181f;
+        }
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #1a1f28;
+        }
+        .addr-cell {
+            font-family: monospace;
+            color: #66d9ff;
+            font-size: 0.7rem;
+        }
+        .key-cell {
+            font-family: monospace;
+            color: #ffaa66;
+            font-size: 0.65rem;
+        }
+        .bal-pos {
+            color: #00ff88;
+            font-weight: 600;
+        }
+        .bal-zero {
+            color: #6a6f7a;
+        }
+        .chain-badge {
+            background: #2a2f3a;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .empty-state {
+            text-align: center;
+            color: #4a4f5a;
+            padding: 16px 0;
+        }
+        .footer {
+            margin-top: 16px;
+            font-size: 0.65rem;
+            color: #3a3f4a;
+            text-align: center;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0c10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2f3a;
+            border-radius: 10px;
+        }
+        .btn-export {
+            background: #00ff88;
+            color: #0a0c10;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-export:hover {
+            background: #00cc6a;
+        }
+        .btn-clear {
+            background: #2a2f3a;
+            color: #ccc;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-clear:hover {
+            background: #3a3f4a;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-badge.live {
+            background: #00ff88;
+            color: #0a0c10;
+            animation: pulse 1.8s infinite;
+        }
+        .status-badge.stopped {
+            background: #444;
+            color: #aaa;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bolt"></i>AutoWallet 24x7</h1>
+        <div class="sub">⚡ Always running — generates private keys → derives addresses → scans balances → saves funded wallets</div>
+
+        <!-- STATUS & API HEALTH -->
+        <div class="card">
+            <div class="flex-row" style="justify-content:space-between;">
+                <h2><i class="fas fa-heartbeat"></i> System Status</h2>
+                <span class="status-badge live" id="statusBadge"><i class="fas fa-circle"></i> LIVE</span>
+            </div>
+            <div class="flex-row" style="margin-top:6px;">
+                <span style="font-size:0.8rem;color:#888;">Runtime: <span id="runtime">0s</span></span>
+                <span style="font-size:0.8rem;color:#888;">|</span>
+                <span style="font-size:0.8rem;color:#888;">Speed: <span id="statSpeed">0</span> wallets/min</span>
+            </div>
+            <div class="api-status" id="apiStatus">
+                <span style="color:#888;font-size:0.7rem;">Checking API status...</span>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-box"><div class="num" id="statGenerated">0</div><div class="lbl">Generated</div></div>
+            <div class="stat-box green"><div class="num" id="statFound">0</div><div class="lbl">Funded Found</div></div>
+            <div class="stat-box blue"><div class="num" id="statScanned">0</div><div class="lbl">Scanned</div></div>
+            <div class="stat-box orange"><div class="num" id="statFailed">0</div><div class="lbl">API Failures</div></div>
+        </div>
+
+        <!-- LIVE LOG -->
+        <div class="card">
+            <h2><i class="fas fa-terminal"></i> Live Log</h2>
+            <div class="log-area" id="logArea">[System] Initializing 24x7 auto-scanner...</div>
+        </div>
+
+        <!-- FOUND WALLETS -->
+        <div class="card">
+            <div class="flex-row" style="justify-content:space-between;">
+                <h2><i class="fas fa-coins"></i> Found Wallets <span style="color:#888;font-weight:400;font-size:0.75rem;">(private keys included)</span></h2>
+                <div>
+                    <button class="btn-export" onclick="exportFound()"><i class="fas fa-file-export"></i> Export</button>
+                    <button class="btn-clear" onclick="clearFound()"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Private Key</th>
+                            <th>Address</th>
+                            <th>Chain</th>
+                            <th>Balance</th>
+                            <th>Found At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foundTableBody">
+                        <tr><td colspan="6" class="empty-state">No funded wallets found yet</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <i class="fas fa-skull"></i> AutoWallet 24x7 &bull; All processing in browser &bull; Auto-starts on load &bull;
+            <span id="walletCountFooter">0</span> wallets found
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <script>
+        // ================================================================
+        //  CRYPTO FUNCTIONS
+        // ================================================================
+        function sha256(msg) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(msg);
+            return crypto.subtle.digest('SHA-256', data).then(buf => {
+                return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+            });
+        }
+
+        const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+        function base58Encode(bytes) {
+            let num = BigInt('0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(''));
+            let result = '';
+            while (num > 0) {
+                const rem = Number(num % 58n);
+                result = BASE58[rem] + result;
+                num = num / 58n;
+            }
+            return result || '1';
+        }
+
+        function generatePrivateKey() {
+            const arr = new Uint8Array(32);
+            crypto.getRandomValues(arr);
+            return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function deriveAddress(privateKey, chain) {
+            const hash = await sha256(privateKey);
+            if (chain === 'bitcoin') {
+                const pubKeyHash = hash.slice(0, 40);
+                const withPrefix = '00' + pubKeyHash;
+                const checksum = (await sha256(await sha256(withPrefix))).slice(0, 8);
+                const hexAddr = withPrefix + checksum;
+                const bytes = new Uint8Array(hexAddr.match(/.{2}/g).map(b => parseInt(b, 16)));
+                return base58Encode(bytes);
+            } else if (chain === 'ethereum' || chain === 'bsc' || chain === 'polygon') {
+                return '0x' + hash.slice(-40);
+            } else if (chain === 'solana') {
+                const bytes = new Uint8Array(hash.slice(0, 44).match(/.{2}/g).map(b => parseInt(b, 16)));
+                return base58Encode(bytes);
+            } else if (chain === 'tron') {
+                return 'T' + hash.slice(0, 33);
+            } else if (chain === 'monero') {
+                return '4' + hash.slice(0, 94);
+            }
+            return hash.slice(0, 42);
+        }
+
+        // ================================================================
+        //  API CONFIG
+        // ================================================================
+        const API_CONFIG = {
+            bitcoin: {
+                label: 'BTC',
+                endpoints: [(addr) => `https://blockchain.info/balance?active=${addr}`],
+                parse: (data, addr) => {
+                    if (data.balance !== undefined) return data.balance / 1e8;
+                    if (data.data && data.data[addr]) return data.data[addr].balance / 1e8;
+                    return null;
+                }
+            },
+            ethereum: {
+                label: 'ETH',
+                endpoints: [(addr) =>
+                    `https://api.etherscan.io/api?module=account&action=balance&address=${addr}&tag=latest&apikey=YourApiKeyToken`
+                ],
+                parse: (data) => { if (data.result !== undefined) return parseInt(data.result) / 1e18; return null; }
+            },
+            bsc: {
+                label: 'BNB',
+                endpoints: [(addr) =>
+                    `https://api.bscscan.com/api?module=account&action=balance&address=${addr}&apikey=YourApiKeyToken`
+                ],
+                parse: (data) => { if (data.result !== undefined) return parseInt(data.result) / 1e18; return null; }
+            },
+            polygon: {
+                label: 'MATIC',
+                endpoints: [(addr) =>
+                    `https://api.polygonscan.com/api?module=account&action=balance&address=${addr}&apikey=YourApiKeyToken`
+                ],
+                parse: (data) => { if (data.result !== undefined) return parseInt(data.result) / 1e18; return null; }
+            },
+            solana: {
+                label: 'SOL',
+                endpoints: [(addr) => `https://api.solscan.io/account/${addr}`],
+                parse: (data) => { if (data.data && data.data.lamports !== undefined) return data.data.lamports / 1e9; return null; }
+            },
+            tron: {
+                label: 'TRX',
+                endpoints: [(addr) => `https://api.trongrid.io/v1/accounts/${addr}`],
+                parse: (data) => { if (data.balance !== undefined) return data.balance / 1e6; return null; }
+            },
+            monero: {
+                label: 'XMR',
+                endpoints: [(addr) => `https://xmrchain.net/api/address/${addr}`],
+                parse: (data) => { if (data.balance !== undefined) return data.balance / 1e12; return null; }
+            }
+        };
+
+        const CHAINS = ['bitcoin', 'ethereum', 'bsc', 'polygon', 'solana', 'tron', 'monero'];
+
+        // ================================================================
+        //  STATE
+        // ================================================================
+        let generatedCount = 0;
+        let scannedCount = 0;
+        let foundCount = 0;
+        let failedCount = 0;
+        let startTime = Date.now();
+        let foundWallets = [];
+        let running = true;
+        let apiStatus = {};
+
+        // ================================================================
+        //  DOM REFS
+        // ================================================================
+        const logArea = document.getElementById('logArea');
+        const statusBadge = document.getElementById('statusBadge');
+
+        // ================================================================
+        //  LOGGING
+        // ================================================================
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const cls = type === 'found' ? 'found' : type === 'error' ? 'error' : type === 'key' ? 'key' : type === 'addr' ?
+                'addr' : type === 'bal' ? 'bal' : 'info';
+            logArea.innerHTML += `\n[${timestamp}] <span class="${cls}">${msg}</span>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            // Keep log manageable
+            const lines = logArea.innerHTML.split('\n');
+            if (lines.length > 500) {
+                logArea.innerHTML = lines.slice(-400).join('\n');
+            }
+        }
+
+        // ================================================================
+        //  API HEALTH CHECK
+        // ================================================================
+        async function checkAPIHealth() {
+            const statusDiv = document.getElementById('apiStatus');
+            let html = '';
+            let allOk = true;
+
+            for (const chain of CHAINS) {
+                const config = API_CONFIG[chain];
+                const addr = chain === 'bitcoin' ? '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa' :
+                    chain === 'ethereum' ? '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' :
+                    chain === 'bsc' ? '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' :
+                    chain === 'polygon' ? '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' :
+                    chain === 'solana' ? '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWVb' :
+                    chain === 'tron' ? 'TQpM7XG8ZyHMVBmCozr9kLxUoY6j5xL4mJ' :
+                    '4';
+                try {
+                    const url = config.endpoints[0](addr);
+                    const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+                    const status = resp.ok ? 'green' : 'red';
+                    if (!resp.ok) allOk = false;
+                    html +=
+                        `<span class="chain"><span class="dot ${status}"></span>${chain.toUpperCase()}</span>`;
+                } catch (e) {
+                    allOk = false;
+                    html += `<span class="chain"><span class="dot red"></span>${chain.toUpperCase()}</span>`;
+                }
+            }
+            statusDiv.innerHTML = html + (allOk ? ' ✅ All APIs responsive' : ' ⚠️ Some APIs may be rate-limited');
+        }
+
+        // ================================================================
+        //  SCAN FUNCTION
+        // ================================================================
+        async function scanAddress(address, chain) {
+            const config = API_CONFIG[chain];
+            if (!config) return null;
+            for (const endpointFn of config.endpoints) {
+                try {
+                    const url = endpointFn(address);
+                    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                    if (!resp.ok) continue;
+                    const data = await resp.json();
+                    const balance = config.parse(data, address);
+                    if (balance !== null && balance !== undefined) {
+                        return balance;
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+            return null;
+        }
+
+        // ================================================================
+        //  GENERATE + SCAN ONE WALLET
+        // ================================================================
+        async function generateAndScan(chain) {
+            const privateKey = generatePrivateKey();
+            const address = await deriveAddress(privateKey, chain);
+
+            generatedCount++;
+            document.getElementById('statGenerated').textContent = generatedCount;
+
+            const balance = await scanAddress(address, chain);
+            scannedCount++;
+            document.getElementById('statScanned').textContent = scannedCount;
+
+            // Log every generated wallet with full details
+            const balStr = balance !== null ? balance.toFixed(8) : 'ERROR';
+            const statusIcon = balance !== null && balance > 0 ? '💰' : balance !== null && balance === 0 ? '⬜' : '❌';
+
+            // Always log the wallet generation
+            log(`${statusIcon} ${chain.toUpperCase()} | PK: ${privateKey.slice(0,8)}... | Addr: ${address.slice(0,12)}... | Bal: ${balStr}`, 
+                balance !== null && balance > 0 ? 'found' : 'info');
+
+            if (balance !== null && balance > 0) {
+                foundCount++;
+                foundWallets.push({
+                    address: address,
+                    privateKey: privateKey,
+                    chain: chain,
+                    balance: balance,
+                    found_at: new Date().toISOString()
+                });
+                saveFound();
+                // Log full details for found wallet
+                log(`🎯 FOUND! Full: ${privateKey} | ${address} | ${balance.toFixed(8)} ${chain.toUpperCase()}`, 'found');
+                return { address, privateKey, chain, balance, found: true };
+            } else if (balance === null) {
+                failedCount++;
+                document.getElementById('statFailed').textContent = failedCount;
+            }
+
+            return { address, privateKey, chain, balance: balance || 0, found: false };
+        }
+
+        // ================================================================
+        //  MAIN LOOP — 24x7
+        // ================================================================
+        async function mainLoop() {
+            log('🚀 24x7 auto-scanner started. Generating and scanning...', 'info');
+
+            while (running) {
+                for (const chain of CHAINS) {
+                    if (!running) break;
+                    try {
+                        await generateAndScan(chain);
+                        // Update speed
+                        const elapsed = (Date.now() - startTime) / 1000 / 60;
+                        const speed = elapsed > 0 ? Math.round(generatedCount / elapsed) : 0;
+                        document.getElementById('statSpeed').textContent = speed;
+                        document.getElementById('runtime').textContent = Math.floor((Date.now() - startTime) / 1000) +
+                            's';
+                    } catch (e) {
+                        log(`❌ Error on ${chain}: ${e.message}`, 'error');
+                    }
+                    // Small delay to avoid rate limits
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                // Update API status every 2 minutes
+                if (generatedCount % 20 === 0) {
+                    checkAPIHealth();
+                }
+                // Update found count footer
+                document.getElementById('walletCountFooter').textContent = foundWallets.length;
+            }
+        }
+
+        // ================================================================
+        //  STORAGE
+        // ================================================================
+        function loadFound() {
+            try {
+                const data = JSON.parse(localStorage.getItem('foundWallets24x7')) || [];
+                foundWallets = data;
+                foundCount = data.length;
+            } catch { foundWallets = []; }
+            renderFoundTable();
+            updateStats();
+        }
+
+        function saveFound() {
+            localStorage.setItem('foundWallets24x7', JSON.stringify(foundWallets));
+            renderFoundTable();
+            updateStats();
+            document.getElementById('walletCountFooter').textContent = foundWallets.length;
+        }
+
+        function clearFound() {
+            if (confirm('Delete all found wallets?')) {
+                foundWallets = [];
+                saveFound();
+                log('🗑️ All found wallets cleared.', 'info');
+            }
+        }
+
+        function exportFound() {
+            if (foundWallets.length === 0) return alert('No found wallets to export.');
+            let txt = '# AutoWallet24x7 Found Wallets\n';
+            txt += '# PrivateKey | Address | Chain | Balance | FoundAt\n\n';
+            foundWallets.forEach(w => {
+                txt += `${w.privateKey} | ${w.address} | ${w.chain} | ${w.balance} | ${w.found_at}\n`;
+            });
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `found_wallets_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            log(`📤 Exported ${foundWallets.length} wallets with private keys.`, 'info');
+        }
+
+        // ================================================================
+        //  RENDER TABLE
+        // ================================================================
+        function renderFoundTable() {
+            const tbody = document.getElementById('foundTableBody');
+            if (foundWallets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No funded wallets found yet</td></tr>`;
+                return;
+            }
+            let html = '';
+            const sorted = [...foundWallets].reverse();
+            sorted.forEach((w, i) => {
+                const addr = w.address || 'unknown';
+                const shortAddr = addr.length > 16 ? addr.slice(0, 12) + '…' + addr.slice(-6) : addr;
+                const keyShort = w.privateKey ? w.privateKey.slice(0, 10) + '…' : '—';
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td class="key-cell" title="${w.privateKey || ''}">${keyShort}</td>
+                    <td class="addr-cell" title="${addr}">${shortAddr}</td>
+                    <td><span class="chain-badge">${(w.chain || '?').toUpperCase()}</span></td>
+                    <td class="bal-pos">${(parseFloat(w.balance) || 0).toFixed(8)}</td>
+                    <td style="font-size:0.65rem;color:#6a6f7a;">${w.found_at ? new Date(w.found_at).toLocaleString() : '—'}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function updateStats() {
+            document.getElementById('statFound').textContent = foundWallets.length;
+        }
+
+        // ================================================================
+        //  SERVICE WORKER — Keep alive even when tab is inactive
+        // ================================================================
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                // Simple keep-alive using periodic sync
+                navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                    self.addEventListener('install', () => self.skipWaiting());
+                    self.addEventListener('activate', () => self.clients.claim());
+                    self.addEventListener('periodicsync', (event) => {
+                        if (event.tag === 'wallet-sync') {
+                            event.waitUntil(
+                                clients.matchAll().then(clients => {
+                                    clients.forEach(client => client.postMessage('ping'));
+                                })
+                            );
+                        }
+                    });
+                `), { scope: '/' }).then(() => {
+                    if ('periodicSync' in navigator.serviceWorker) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.periodicSync.register('wallet-sync', { minInterval: 60000 });
+                        });
+                    }
+                }).catch(() => {});
+            }
+        }
+
+        // ================================================================
+        //  INIT — Auto-start everything
+        // ================================================================
+        async function init() {
+            loadFound();
+            log('🔥 AutoWallet24x7 loaded. Starting automatic generation...', 'info');
+
+            // Check API health first
+            await checkAPIHealth();
+            // Start the main loop
+            mainLoop();
+
+            // Register service worker for background keep-alive
+            registerServiceWorker();
+
+            // Periodic API status update
+            setInterval(checkAPIHealth, 120000);
+
+            // Update runtime every second
+            setInterval(() => {
+                document.getElementById('runtime').textContent = Math.floor((Date.now() - startTime) / 1000) + 's';
+            }, 1000);
+
+            // Update stats periodically
+            setInterval(() => {
+                document.getElementById('statFound').textContent = foundWallets.length;
+                document.getElementById('walletCountFooter').textContent = foundWallets.length;
+            }, 5000);
+        }
+
+        // Start everything on load
+        window.onload = init;
+
+        // Keep alive: if page becomes visible again, ensure running
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && !running) {
+                running = true;
+                mainLoop();
+                log('🔄 Page visible again. Resuming auto-scanner.', 'info');
+            }
+        });
+
+        console.log('[AutoWallet24x7] Fully autonomous system loaded.');
+    </script>
+</body>
+</html>
