@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🖤 WalletWatch Pro</title>
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <!-- Chart.js for graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c10;
+            color: #e4e4e7;
+            padding: 24px;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light {
+            background: #f4f4f9;
+            color: #1a1a1e;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .logo h1 i {
+            color: #00ff88;
+            margin-right: 8px;
+        }
+        .logo span {
+            color: #00ff88;
+            font-weight: 300;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header-actions button {
+            background: #1e232c;
+            border: none;
+            color: #c8ccd4;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.25s;
+            border: 1px solid #2c313c;
+        }
+        .header-actions button:hover {
+            background: #2c313c;
+            color: #fff;
+        }
+        .header-actions .live-badge {
+            background: #00ff88;
+            color: #0a0c10;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            letter-spacing: 0.5px;
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: #14181f;
+            padding: 20px 18px;
+            border-radius: 16px;
+            border-left: 4px solid #00ff88;
+            transition: 0.25s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        body.light .stat-card {
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .stat-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888c98;
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 6px 0 2px;
+        }
+        .stat-card .sub {
+            font-size: 0.8rem;
+            color: #6a6f7a;
+        }
+        /* Filters & Search */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .toolbar input {
+            flex: 1 1 220px;
+            padding: 10px 18px;
+            border-radius: 30px;
+            border: 1px solid #2a2f3a;
+            background: #14181f;
+            color: #e4e4e7;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .toolbar input:focus {
+            border-color: #00ff88;
+        }
+        body.light .toolbar input {
+            background: #fff;
+            color: #1a1a1e;
+            border-color: #d0d5dd;
+        }
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .filter-group button {
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid #2a2f3a;
+            background: transparent;
+            color: #a8acb8;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .filter-group button.active {
+            background: #00ff88;
+            color: #0a0c10;
+            border-color: #00ff88;
+            font-weight: 600;
+        }
+        .filter-group button:hover {
+            background: #2a2f3a;
+            color: #fff;
+        }
+        body.light .filter-group button {
+            border-color: #d0d5dd;
+            color: #3a3e48;
+        }
+        body.light .filter-group button.active {
+            background: #00ff88;
+            color: #0a0c10;
+        }
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            background: #14181f;
+            border-radius: 16px;
+            padding: 4px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        body.light .table-wrapper {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            text-align: left;
+            padding: 16px 16px 12px 16px;
+            color: #888c98;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #242a34;
+            cursor: pointer;
+            user-select: none;
+        }
+        th i {
+            margin-left: 6px;
+            font-size: 0.7rem;
+        }
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #1e232c;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: #1e232c;
+        }
+        body.light tr:hover td {
+            background: #f0f2f6;
+        }
+        .address-cell {
+            font-family: 'Inter', monospace;
+            font-size: 0.85rem;
+            color: #66d9ff;
+            cursor: pointer;
+        }
+        .address-cell i {
+            margin-left: 8px;
+            font-size: 0.7rem;
+            color: #6a6f7a;
+        }
+        .chain-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: #242a34;
+            color: #c8ccd4;
+        }
+        .chain-badge.btc { background: #f7931a; color: #fff; }
+        .chain-badge.eth { background: #627eea; color: #fff; }
+        .chain-badge.bsc { background: #f0b90b; color: #1a1a1e; }
+        .chain-badge.polygon { background: #8247e5; color: #fff; }
+        .chain-badge.sol { background: #9945ff; color: #fff; }
+        .chain-badge.tron { background: #ef0027; color: #fff; }
+        .chain-badge.xmr { background: #4c4c4c; color: #fff; }
+        .balance-pos {
+            color: #00ff88;
+            font-weight: 600;
+        }
+        /* Chart Section */
+        .chart-section {
+            margin-top: 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .chart-box {
+            background: #14181f;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        body.light .chart-box {
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .chart-box h3 {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #888c98;
+            margin-bottom: 12px;
+        }
+        .chart-box canvas {
+            max-height: 180px;
+            max-width: 100%;
+        }
+        @media (max-width: 768px) {
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+        /* Footer */
+        .footer {
+            margin-top: 32px;
+            font-size: 0.75rem;
+            color: #4a4f5a;
+            text-align: center;
+            border-top: 1px solid #1e232c;
+            padding-top: 20px;
+        }
+        body.light .footer {
+            border-top-color: #e0e4ec;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0c10; }
+        ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 10px; }
+        body.light ::-webkit-scrollbar-track { background: #f0f2f6; }
+        body.light ::-webkit-scrollbar-thumb { background: #c8ccd8; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">
+            <h1><i class="fas fa-skull"></i>Wallet<span>Watch</span></h1>
+        </div>
+        <div class="header-actions">
+            <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+            <button onclick="toggleTheme()"><i class="fas fa-moon"></i> <span id="themeLabel">Dark</span></button>
+            <button onclick="exportCSV()"><i class="fas fa-file-export"></i> CSV</button>
+            <button onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="label">Total Wallets</div><div class="value" id="totalWallets">0</div><div class="sub">found</div></div>
+        <div class="stat-card"><div class="label">Total Balance (USD)</div><div class="value" id="totalBalance">0.0000</div><div class="sub">estimated</div></div>
+        <div class="stat-card"><div class="label">Unique Chains</div><div class="value" id="uniqueChains">0</div><div class="sub">active</div></div>
+        <div class="stat-card"><div class="label">Last Update</div><div class="value" id="lastUpdate" style="font-size:1.2rem;">—</div><div class="sub">auto-refresh</div></div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="🔍 Search by address or chain..." oninput="applyFilters()" />
+        <div class="filter-group" id="filterGroup">
+            <button class="active" data-chain="all">All</button>
+            <button data-chain="bitcoin">BTC</button>
+            <button data-chain="ethereum">ETH</button>
+            <button data-chain="bsc">BSC</button>
+            <button data-chain="polygon">POLY</button>
+            <button data-chain="solana">SOL</button>
+            <button data-chain="tron">TRX</button>
+            <button data-chain="monero">XMR</button>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortTable('address')">Address <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable('chain')">Chain <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable('balance')">Balance <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable('found_at')">Found At <i class="fas fa-sort"></i></th>
+                </tr>
+            </thead>
+            <tbody id="walletBody">
+                <tr><td colspan="4" style="text-align:center;color:#4a4f5a;padding:40px;"><i class="fas fa-spinner fa-spin"></i> Loading wallets...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="chart-section">
+        <div class="chart-box"><h3><i class="fas fa-chart-pie"></i> Balance by Chain</h3><canvas id="pieChart"></canvas></div>
+        <div class="chart-box"><h3><i class="fas fa-chart-bar"></i> Wallet Count by Chain</h3><canvas id="barChart"></canvas></div>
+    </div>
+
+    <div class="footer">
+        <i class="fas fa-skull"></i> WalletWatch Pro &bull; Data refreshes every 30s &bull; <span id="totalWalletsFooter">0</span> wallets tracked
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  GLOBALS
+    // ============================================================
+    let allWallets = [];
+    let currentChain = 'all';
+    let sortKey = null;
+    let sortAsc = true;
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
+    // ============================================================
+    //  FETCH DATA
+    // ============================================================
+    async function loadData() {
+        try {
+            // CHANGE THIS URL TO YOUR wallets.json ON GITHUB PAGES
+            const res = await fetch('wallets.json');
+            if (!res.ok) throw new Error('wallets.json not found');
+            const data = await res.json();
+            allWallets = data;
+            updateUI();
+        } catch (e) {
+            console.warn('Load error:', e);
+            document.getElementById('walletBody').innerHTML =
+                `<tr><td colspan="4" style="text-align:center;color:#6a6f7a;padding:40px;">
+                    <i class="fas fa-database"></i> No data found. Run scraper or upload wallets.json
+                </td></tr>`;
+        }
+    }
+
+    // ============================================================
+    //  UPDATE UI
+    // ============================================================
+    function updateUI() {
+        const filtered = getFilteredData();
+        renderStats(filtered);
+        renderTable(filtered);
+        renderCharts(filtered);
+        document.getElementById('totalWalletsFooter').textContent = allWallets.length;
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+    }
+
+    function getFilteredData() {
+        let data = [...allWallets];
+        // chain filter
+        if (currentChain !== 'all') {
+            data = data.filter(w => w.chain === currentChain);
+        }
+        // search
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (query) {
+            data = data.filter(w =>
+                w.address.toLowerCase().includes(query) ||
+                w.chain.toLowerCase().includes(query)
+            );
+        }
+        // sort
+        if (sortKey) {
+            data.sort((a, b) => {
+                let va = a[sortKey] || '';
+                let vb = b[sortKey] || '';
+                if (sortKey === 'balance') { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return sortAsc ? -1 : 1;
+                if (va > vb) return sortAsc ? 1 : -1;
+                return 0;
+            });
+        }
+        return data;
+    }
+
+    // ============================================================
+    //  STATS
+    // ============================================================
+    function renderStats(data) {
+        document.getElementById('totalWallets').textContent = data.length;
+        const totalBal = data.reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
+        document.getElementById('totalBalance').textContent = totalBal.toFixed(4);
+        const chains = new Set(data.map(w => w.chain));
+        document.getElementById('uniqueChains').textContent = chains.size;
+    }
+
+    // ============================================================
+    //  TABLE
+    // ============================================================
+    function renderTable(data) {
+        const tbody = document.getElementById('walletBody');
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#6a6f7a;padding:30px;">No wallets found</td></tr>`;
+            return;
+        }
+        let html = '';
+        data.forEach(w => {
+            const addr = w.address || 'unknown';
+            const short = addr.length > 14 ? addr.slice(0, 10) + '…' + addr.slice(-6) : addr;
+            const chainClass = (w.chain || 'unknown').toLowerCase();
+            html += `<tr>
+                <td class="address-cell" onclick="copyAddress('${addr}')" title="${addr}">
+                    ${short} <i class="fas fa-copy"></i>
+                </td>
+                <td><span class="chain-badge ${chainClass}">${(w.chain || '?').toUpperCase()}</span></td>
+                <td class="balance-pos">${parseFloat(w.balance || 0).toFixed(6)}</td>
+                <td>${w.found_at || '—'}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function copyAddress(addr) {
+        navigator.clipboard?.writeText(addr).then(() => {
+            alert('Address copied: ' + addr);
+        }).catch(() => {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = addr;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            alert('Address copied!');
+        });
+    }
+
+    // ============================================================
+    //  CHARTS
+    // ============================================================
+    function renderCharts(data) {
+        const chainMap = {};
+        const balanceMap = {};
+        data.forEach(w => {
+            const c = w.chain || 'unknown';
+            chainMap[c] = (chainMap[c] || 0) + 1;
+            balanceMap[c] = (balanceMap[c] || 0) + (parseFloat(w.balance) || 0);
+        });
+        const labels = Object.keys(chainMap);
+        const counts = Object.values(chainMap);
+        const balances = Object.values(balanceMap);
+
+        // Pie
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        if (pieChartInstance) pieChartInstance.destroy();
+        pieChartInstance = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: balances,
+                    backgroundColor: ['#f7931a','#627eea','#f0b90b','#8247e5','#9945ff','#ef0027','#4c4c4c'],
+                    borderColor: '#14181f',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#c8ccd4', font: { size: 10 } } } }
+            }
+        });
+
+        // Bar
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Wallets',
+                    data: counts,
+                    backgroundColor: '#00ff88',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { color: '#6a6f7a', stepSize: 1 }, grid: { color: '#1e232c' } },
+                    x: { ticks: { color: '#6a6f7a', font: { size: 9 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // ============================================================
+    //  FILTERS & SORT
+    // ============================================================
+    function applyFilters() {
+        updateUI();
+    }
+
+    function filterByChain(chain, btn) {
+        currentChain = chain;
+        document.querySelectorAll('#filterGroup button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateUI();
+    }
+
+    function sortTable(key) {
+        if (sortKey === key) {
+            sortAsc = !sortAsc;
+        } else {
+            sortKey = key;
+            sortAsc = true;
+        }
+        updateUI();
+    }
+
+    // ============================================================
+    //  THEME
+    // ============================================================
+    function toggleTheme() {
+        document.body.classList.toggle('light');
+        const label = document.getElementById('themeLabel');
+        label.textContent = document.body.classList.contains('light') ? 'Light' : 'Dark';
+    }
+
+    // ============================================================
+    //  EXPORT CSV
+    // ============================================================
+    function exportCSV() {
+        const data = getFilteredData();
+        if (!data.length) return alert('No data to export.');
+        const headers = ['address', 'chain', 'balance', 'found_at'];
+        let csv = headers.join(',') + '\n';
+        data.forEach(w => {
+            csv += [w.address, w.chain, w.balance, w.found_at].join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'wallets_export.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    //  REFRESH
+    // ============================================================
+    function refreshData() {
+        loadData();
+    }
+
+    // ============================================================
+    //  EVENT BINDING — Chain Filters
+    // ============================================================
+    document.querySelectorAll('#filterGroup button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterByChain(this.dataset.chain, this);
+        });
+    });
+
+    // ============================================================
+    //  INIT
+    // ============================================================
+    loadData();
+    setInterval(loadData, 30000); // auto-refresh every 30s
+</script>
+</body>
+</html>
