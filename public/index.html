@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔥 Farm</title>
+    <style>
+        body {
+            background: #0a0c10;
+            color: #00ff88;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff88;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            background: #14181f;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border-left: 3px solid #00ff88;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #1e232c;
+            text-align: left;
+        }
+        th {
+            color: #888;
+        }
+        .addr {
+            color: #66d9ff;
+        }
+        .key {
+            color: #ffaa66;
+        }
+        .bal {
+            color: #00ff88;
+        }
+        .btn {
+            background: #00ff88;
+            color: #0a0c10;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #00cc6a;
+        }
+        .footer {
+            margin-top: 20px;
+            color: #444;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 BruteForce Farm</h1>
+        <p id="status">⏳ Loading...</p>
+
+        <div class="stats" id="stats">
+            <div class="stat">Generated: <span id="gen">0</span></div>
+            <div class="stat">Scanned: <span id="scan">0</span></div>
+            <div class="stat" style="border-left-color:#00ff88;">Found: <span id="found">0</span></div>
+            <div class="stat">Speed: <span id="speed">0</span>/min</div>
+            <div class="stat">Runtime: <span id="runtime">0s</span></div>
+        </div>
+
+        <button class="btn" onclick="exportWallets()">📥 Export TXT</button>
+        <button class="btn" onclick="refresh()">🔄 Refresh</button>
+
+        <table>
+            <thead><tr><th>#</th><th>Private Key</th><th>Address</th><th>Chain</th><th>Balance</th><th>Found At</th></tr></thead>
+            <tbody id="tableBody"><tr><td colspan="6" style="color:#444;">Loading...</td></tr></tbody>
+        </table>
+
+        <div class="footer">24x7 Farm &bull; Data stored on server</div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        async function fetchAPI(endpoint) {
+            const res = await fetch(API_BASE + endpoint);
+            if (!res.ok) throw new Error('API error');
+            return res.json();
+        }
+
+        async function loadStats() {
+            try {
+                const data = await fetchAPI('/api/stats');
+                document.getElementById('gen').textContent = data.generated || 0;
+                document.getElementById('scan').textContent = data.scanned || 0;
+                document.getElementById('found').textContent = data.found || 0;
+                document.getElementById('speed').textContent = data.speed || 0;
+                document.getElementById('runtime').textContent = (data.runtime || 0) + 's';
+                document.getElementById('status').innerHTML = '✅ Connected to backend';
+                document.getElementById('status').style.color = '#00ff88';
+            } catch (e) {
+                document.getElementById('status').innerHTML = '❌ Backend error';
+                document.getElementById('status').style.color = '#ff6b6b';
+            }
+        }
+
+        async function loadWallets() {
+            try {
+                const data = await fetchAPI('/api/wallets/recent');
+                const tbody = document.getElementById('tableBody');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="color:#444;">No wallets found yet</td></tr>';
+                    return;
+                }
+                let html = '';
+                data.forEach((w, i) => {
+                    html += `<tr>
+                        <td>${i+1}</td>
+                        <td class="key">${(w.privateKey||'').slice(0,10)}…</td>
+                        <td class="addr">${(w.address||'').slice(0,14)}…</td>
+                        <td>${(w.chain||'').toUpperCase()}</td>
+                        <td class="bal">${(parseFloat(w.balance)||0).toFixed(8)}</td>
+                        <td style="color:#666;">${w.found_at ? new Date(w.found_at).toLocaleString() : '—'}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" style="color:#ff6b6b;">Error loading</td></tr>';
+            }
+        }
+
+        async function refresh() {
+            await Promise.all([loadStats(), loadWallets()]);
+        }
+
+        async function exportWallets() {
+            const data = await fetchAPI('/api/wallets');
+            if (!data || data.length === 0) return alert('No wallets to export');
+            let txt = 'PrivateKey | Address | Chain | Balance | FoundAt\n';
+            data.forEach(w => txt += `${w.privateKey} | ${w.address} | ${w.chain} | ${w.balance} | ${w.found_at}\n`);
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `wallets_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+        }
+
+        refresh();
+        setInterval(refresh, 15000);
+    </script>
+</body>
+</html>
