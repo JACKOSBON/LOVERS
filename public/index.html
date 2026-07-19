@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 Farm Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        body {
+            background: #0a0c10;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff88;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .stat {
+            background: #14181f;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border-left: 3px solid #00ff88;
+            min-width: 80px;
+        }
+        .stat .num {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .stat .lbl {
+            font-size: 0.55rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .stat .num.found {
+            color: #00ff88;
+        }
+        .stat .num.error {
+            color: #ff6b6b;
+        }
+        .api-status {
+            background: #14181f;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            border: 1px solid #1e232c;
+        }
+        .api-status h3 {
+            color: #888;
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+        }
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 4px;
+        }
+        .api-item {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            background: #0a0c10;
+        }
+        .api-item .status.working {
+            color: #00ff88;
+        }
+        .api-item .status.dead {
+            color: #ff6b6b;
+        }
+        .log-container {
+            background: #0a0c10;
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #1e232c;
+            font-size: 0.7rem;
+            font-family: 'Courier New', monospace;
+        }
+        .log-container .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid #14181f;
+        }
+        .log-container .log-entry .time {
+            color: #444;
+            margin-right: 8px;
+        }
+        .log-container .log-entry .info {
+            color: #6688cc;
+        }
+        .log-container .log-entry .found {
+            color: #00ff88;
+            font-weight: 700;
+        }
+        .log-container .log-entry .error {
+            color: #ff6b6b;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .actions button {
+            background: #1e232c;
+            border: 1px solid #2a2f3a;
+            color: #ccc;
+            padding: 5px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.65rem;
+        }
+        .actions .export-btn {
+            background: #00ff88;
+            color: #0a0c10;
+            border: none;
+            font-weight: 700;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.65rem;
+        }
+        th {
+            text-align: left;
+            padding: 6px;
+            color: #888;
+            border-bottom: 1px solid #1e232c;
+            position: sticky;
+            top: 0;
+            background: #14181f;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #1a1f28;
+        }
+        .addr {
+            color: #66d9ff;
+        }
+        .key {
+            color: #ffaa66;
+        }
+        .bal {
+            color: #00ff88;
+            font-weight: 600;
+        }
+        .chain-badge {
+            background: #2a2f3a;
+            padding: 1px 6px;
+            border-radius: 12px;
+            font-size: 0.55rem;
+        }
+        .footer {
+            margin-top: 16px;
+            font-size: 0.55rem;
+            color: #3a3f4a;
+            text-align: center;
+            border-top: 1px solid #1e232c;
+            padding-top: 12px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .status-badge.running {
+            background: #00ff88;
+            color: #0a0c10;
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0c10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2f3a;
+        }
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+            <h1>🔓 BruteForce Farm</h1>
+            <span class="status-badge running">● RUNNING</span>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat"><div class="num" id="gen">0</div><div class="lbl">Generated</div></div>
+            <div class="stat"><div class="num" id="scan">0</div><div class="lbl">Scanned</div></div>
+            <div class="stat"><div class="num found" id="found">0</div><div class="lbl">Found</div></div>
+            <div class="stat"><div class="num" id="speed">0</div><div class="lbl">Wallets/min</div></div>
+            <div class="stat"><div class="num" id="runtime">0s</div><div class="lbl">Runtime</div></div>
+            <div class="stat"><div class="num error" id="errors">0</div><div class="lbl">Errors</div></div>
+        </div>
+
+        <div class="api-status">
+            <h3>🔌 API Health</h3>
+            <div class="api-grid" id="apiGrid">
+                <div style="color:#888;font-size:0.7rem;">Loading...</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="export-btn" onclick="exportWallets()">📥 Export TXT</button>
+            <button onclick="refreshData()">🔄 Refresh</button>
+        </div>
+
+        <div class="grid-2">
+            <div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Private Key</th>
+                                <th>Address</th>
+                                <th>Chain</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="5" style="text-align:center;color:#4a4f5a;padding:16px;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:8px;font-size:0.6rem;color:#4a4f5a;">
+                    <span id="walletCount">0</span> wallets found
+                </div>
+            </div>
+            <div>
+                <h3 style="color:#888;font-size:0.7rem;margin-bottom:6px;">📡 Live Logs</h3>
+                <div class="log-container" id="logContainer">
+                    <div style="color:#444;">Connecting to logs...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <i class="fas fa-skull"></i> 24x7 Farm &bull; API health checked every 2 min
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  LIVE LOGS — EventSource
+        // ================================================================
+        function initLogs() {
+            const logContainer = document.getElementById('logContainer');
+            
+            if (typeof EventSource !== 'undefined') {
+                const source = new EventSource('/api/logs');
+                
+                source.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    const time = new Date(data.timestamp).toLocaleTimeString();
+                    const typeClass = data.type || 'info';
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry';
+                    entry.innerHTML = `<span class="time">[${time}]</span><span class="${typeClass}">${data.message}</span>`;
+                    logContainer.appendChild(entry);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                    
+                    // Keep last 200 entries
+                    while (logContainer.children.length > 200) {
+                        logContainer.removeChild(logContainer.firstChild);
+                    }
+                };
+                
+                source.onerror = function() {
+                    logContainer.innerHTML = '<div style="color:#ff6b6b;">❌ Log connection lost. Reconnecting...</div>';
+                    setTimeout(initLogs, 3000);
+                };
+            } else {
+                logContainer.innerHTML = '<div style="color:#ff6b6b;">⚠️ EventSource not supported</div>';
+            }
+        }
+
+        // ================================================================
+        //  API HELPERS
+        // ================================================================
+        async function fetchAPI(endpoint) {
+            try {
+                const res = await fetch(endpoint);
+                if (!res.ok) throw new Error('API error');
+                return await res.json();
+            } catch (e) {
+                console.error('API error:', e);
+                return null;
+            }
+        }
+
+        // ================================================================
+        //  LOAD API STATUS
+        // ================================================================
+        async function loadAPIStatus() {
+            const data = await fetchAPI('/api/health');
+            if (data && data.apiStatus) {
+                const grid = document.getElementById('apiGrid');
+                let html = '';
+                for (const [chain, status] of Object.entries(data.apiStatus)) {
+                    const isWorking = status.includes('✅');
+                    html += `
+                        <div class="api-item">
+                            <span>${chain.toUpperCase()}</span>
+                            <span class="status ${isWorking ? 'working' : 'dead'}">${status}</span>
+                        </div>
+                    `;
+                }
+                grid.innerHTML = html;
+            }
+        }
+
+        // ================================================================
+        //  LOAD STATS
+        // ================================================================
+        async function loadStats() {
+            const data = await fetchAPI('/api/stats');
+            if (data) {
+                document.getElementById('gen').textContent = data.generated || 0;
+                document.getElementById('scan').textContent = data.scanned || 0;
+                document.getElementById('found').textContent = data.found || 0;
+                document.getElementById('speed').textContent = data.speed || 0;
+                document.getElementById('runtime').textContent = (data.runtime || 0) + 's';
+                document.getElementById('errors').textContent = data.errors || 0;
+                document.getElementById('walletCount').textContent = data.wallets_found || 0;
+            }
+        }
+
+        // ================================================================
+        //  LOAD WALLETS
+        // ================================================================
+        async function loadWallets() {
+            const data = await fetchAPI('/api/wallets/recent');
+            const tbody = document.getElementById('tableBody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#4a4f5a;padding:16px;">No wallets found yet</td></tr>`;
+                return;
+            }
+            let html = '';
+            data.forEach((w, i) => {
+                const addr = w.address || 'unknown';
+                const shortAddr = addr.length > 16 ? addr.slice(0, 12) + '…' + addr.slice(-6) : addr;
+                const keyShort = w.privateKey ? w.privateKey.slice(0, 8) + '…' : '—';
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td class="key" title="${w.privateKey || ''}">${keyShort}</td>
+                    <td class="addr" title="${addr}">${shortAddr}</td>
+                    <td><span class="chain-badge">${(w.chain || '?').toUpperCase()}</span></td>
+                    <td class="bal">${(parseFloat(w.balance) || 0).toFixed(6)}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // ================================================================
+        //  REFRESH
+        // ================================================================
+        async function refreshData() {
+            await Promise.all([loadAPIStatus(), loadStats(), loadWallets()]);
+        }
+
+        // ================================================================
+        //  EXPORT
+        // ================================================================
+        async function exportWallets() {
+            const data = await fetchAPI('/api/wallets');
+            if (!data || data.length === 0) return alert('No wallets to export.');
+            let txt = 'PrivateKey | Address | Chain | Balance | FoundAt\n';
+            data.forEach(w => {
+                txt += `${w.privateKey} | ${w.address} | ${w.chain} | ${w.balance} | ${w.found_at}\n`;
+            });
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wallets_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ================================================================
+        //  INIT
+        // ================================================================
+        initLogs();
+        refreshData();
+        setInterval(refreshData, 15000);
+    </script>
+</body>
+</html>
