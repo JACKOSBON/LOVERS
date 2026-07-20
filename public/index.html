@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔓 Wallet Matcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        body {
+            background: #0a0c10;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff88;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 10px;
+        }
+        .card {
+            background: #14181f;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid #1e232c;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .stat {
+            background: #0a0c10;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #00ff88;
+        }
+        .stat .num {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat .lbl {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .status {
+            color: #00ff88;
+            font-size: 0.8rem;
+            margin: 8px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.6rem;
+            color: #3a3f4a;
+            text-align: center;
+        }
+        .btn {
+            background: #00ff88;
+            color: #0a0c10;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 4px;
+        }
+        .btn:hover {
+            background: #00cc6a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Wallet Matcher</h1>
+        <div class="status" id="status">⏳ Loading...</div>
+
+        <div class="card">
+            <div class="stats" id="stats">
+                <div class="stat"><div class="num" id="gen">0</div><div class="lbl">Generated</div></div>
+                <div class="stat"><div class="num" id="match">0</div><div class="lbl">Matched</div></div>
+                <div class="stat"><div class="num" id="targets">0</div><div class="lbl">Targets</div></div>
+                <div class="stat"><div class="num" id="runtime">0s</div><div class="lbl">Runtime</div></div>
+            </div>
+        </div>
+
+        <div>
+            <button class="btn" onclick="window.location.href='/matched_wallets.txt'">📥 Download Matched</button>
+            <button class="btn" onclick="window.location.href='/target_addresses.txt'">📥 Download Targets</button>
+            <button class="btn" onclick="refresh()">🔄 Refresh</button>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <h3 style="color:#888;font-size:0.8rem;">📌 How to add target addresses</h3>
+            <p style="color:#666;font-size:0.7rem;">
+                1. Edit <code>target_addresses.txt</code><br/>
+                2. Add one address per line<br/>
+                3. Save and redeploy<br/>
+                4. Matcher will find matching wallets
+            </p>
+        </div>
+
+        <div class="footer">
+            <i class="fas fa-skull"></i> 24x7 Wallet Matcher &bull; Auto-push to GitHub
+        </div>
+    </div>
+
+    <script>
+        async function refresh() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('gen').textContent = data.generated || 0;
+                document.getElementById('match').textContent = data.matched || 0;
+                document.getElementById('targets').textContent = data.targets || 0;
+                document.getElementById('runtime').textContent = (data.runtime || 0) + 's';
+                document.getElementById('status').innerHTML = '✅ Running 24x7';
+                document.getElementById('status').style.color = '#00ff88';
+            } catch (e) {
+                document.getElementById('status').innerHTML = '❌ Error';
+                document.getElementById('status').style.color = '#ff6b6b';
+            }
+        }
+
+        refresh();
+        setInterval(refresh, 5000);
+    </script>
+</body>
+</html>
